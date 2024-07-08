@@ -1,0 +1,62 @@
+[
+  {
+    "hashed_password": null,
+    "name": "Ubed Khan",
+    "password": null,
+    "tickets_booked": [
+      {
+        "ticket_id": null,
+        "user_id": null,
+        "source": "Bangalore",
+        "destination": "Delhi",
+        "date_of_travel": "2023-12-08T18:30:00Z",
+        "train": {
+          "train_id": "baca",
+          "train_no": "12345",
+          "seats": [
+            [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          ],
+          "station_times": {
+            "Bangalore": "13:50:00",
+            "Jaipur": "13:50:00",
+            "Delhi": "13:50:00"
+          },
+          "train_info": "Train ID: baca Train No: 12345",
+          "stations": [
+            "Bangalore",
+            "Jaipur",
+            "Delhi"
+          ]
+        },
+        "ticket_info": "Ticket ID: null belongs to User null from Bangalore to Delhi on 2023-12-08T18:30:00Z"
+      }
+    ],
+    "user_id": "11111"
+  },{"name":"ubednama","password":"12345678","hashed_password":"$2a$10$lwRCHkupvIRJx./O0bAJn.qPZGUmsf/Pd2VCFG9daJz8BQfhySxOO","tickets_booked":[],"user_id":"36ae5c19-1387-4adf-85e2-f8ca5fc88d2a"},{"name":"2","password":"qq","hashed_password":"$2a$10$skK66JO9iuYCG.DWzB5t2.BD0WI7QEckofnHMXKETBromHYefAxg.","tickets_booked":[],"user_id":"18ad934a-c6b3-46fd-95a8-606623c87726"}]
