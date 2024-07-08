@@ -42,16 +42,13 @@ public class TrainService {
     }
 
     public void updateTrain(Train updatedTrain) {
-        // Find the index of the train with the same trainId
         OptionalInt index = IntStream.range(0, trainList.size())
                 .filter(i -> trainList.get(i).getTrainId().equalsIgnoreCase(updatedTrain.getTrainId()))
                 .findFirst();
 
         if (index.isPresent()) {
-            // If found, replace the existing train with the updated one
             trainList.set(index.getAsInt(), updatedTrain);
         } else {
-            // If not found, treat it as adding a new train (though in reality, this should not happen due to addTrain)
             addTrain(updatedTrain);
         }
 

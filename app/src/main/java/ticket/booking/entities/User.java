@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,11 +33,19 @@ public class User {
         }
     }
 
+    public void setTicketsBooked(List<Ticket> ticketsBooked) {
+        this.ticketsBooked = ticketsBooked;
+    }
+
     public void addTicketBooked(Ticket ticket) {
         if (ticketsBooked == null) {
             ticketsBooked = new ArrayList<>();
         }
         ticketsBooked.add(ticket);
+    }
+
+    public List<Ticket> getTicketsBooked() {
+        return this.ticketsBooked;
     }
 
 }

@@ -15,13 +15,13 @@ public class App {
             System.out.println("Running Train Booking System");
             Scanner scanner = new Scanner(System.in);
             int option = 0;
-            UserBookingService userBookingService = null;
+            UserBookingService userBookingService;
             User loggedInUser = null;
             String username;
             String password;
 
             try {
-                userBookingService = new UserBookingService(loggedInUser);
+                userBookingService = new UserBookingService(null);
             } catch (IOException ex) {
                 System.out.println("Error initializing booking service: " + ex.getMessage());
                 ex.printStackTrace();
@@ -56,6 +56,7 @@ public class App {
                             User userToSignup = new User(username, password,
                                     UserServiceUtil.hashPassword(password), new ArrayList<>(),
                                     UUID.randomUUID().toString());
+                            assert userBookingService != null;
                             if (userBookingService.signUp(userToSignup)) {
                                 System.out.println("Sign up successful!");
                             } else {
@@ -80,6 +81,7 @@ public class App {
                         case 3:
                             if (loggedInUser != null) {
                                 System.out.println("Fetching your bookings:");
+                                assert userBookingService != null;
                                 userBookingService.fetchBookings();
                             } else {
                                 System.out.println("Please login first.");
@@ -91,6 +93,7 @@ public class App {
                                 String source = scanner.next();
                                 System.out.println("Enter destination station:");
                                 String dest = scanner.next();
+                                assert userBookingService != null;
                                 List<Train> trains = userBookingService.getTrains(source, dest);
 
                                 if (trains.isEmpty()) {
@@ -173,6 +176,7 @@ public class App {
                             break;
                         case 6:
                             if (loggedInUser != null) {
+                                assert userBookingService != null;
                                 userBookingService.logout();
                                 loggedInUser = null;
                                 userBookingService = null;
@@ -185,7 +189,6 @@ public class App {
                             break;
                         default:
                             System.out.println("Invalid option. Please choose a valid option.");
-                            continue;
                     }
 
                 } catch (InputMismatchException e) {
