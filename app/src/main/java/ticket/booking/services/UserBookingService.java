@@ -9,9 +9,8 @@ import ticket.booking.util.UserServiceUtil;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class UserBookingService {
 
@@ -24,10 +23,6 @@ public class UserBookingService {
 
     public UserBookingService(User user) throws IOException {
         this.user = user;
-        loadUserListFromFile();
-    }
-
-    public UserBookingService() throws IOException {
         loadUserListFromFile();
     }
 
@@ -54,28 +49,41 @@ public class UserBookingService {
         return foundUser.isPresent();
     }
 
-    public Boolean signUp(User user1) {
-        try {
-            userList.add(user1);
-            saveUserListToFile();
-            return true;
-        } catch (IOException ex) {
-            System.out.println("Error saving user list: " + ex.getMessage());
-            return false;
-        }
+    public Boolean signUp(User user) throws IOException {
+        userList.add(user);
+        saveUserListToFile();
+        return true;
     }
 
-    private void saveUserListToFile() throws IOException {
-        objectMapper.writeValue(new File(USER_FILE_PATH), userList);
-    }
+
 
     public void fetchBookings() {
+        System.out.println("Attempting to fetch bookings for user: " + user.getName());
+
         Optional<User> foundUser = userList.stream()
                 .filter(u -> u.getName().equals(user.getName()) &&
                         UserServiceUtil.checkPassword(user.getPassword(), u.getHashedPassword()))
                 .findFirst();
-        foundUser.ifPresent(User::printTickets);
+
+        System.out.println("Found user: " + foundUser.isPresent());
+
+        if (foundUser.isPresent()) {
+            User loggedInUser = foundUser.get();
+            System.out.println("Fetching bookings for user: " + loggedInUser.getName());
+
+            List<Ticket> bookedTickets = loggedInUser.getTicketsBooked();
+            if (bookedTickets.isEmpty()) {
+                System.out.println("No bookings found for user: " + loggedInUser.getName());
+            } else {
+                for (Ticket ticket : bookedTickets) {
+                    System.out.println(ticket.getTicketInfo());
+                }
+            }
+        } else {
+            System.out.println("No user found with the provided credentials.");
+        }
     }
+
 
     public Boolean cancelBooking(String ticketId) {
         if (ticketId == null || ticketId.isEmpty()) {
@@ -95,14 +103,9 @@ public class UserBookingService {
 
             if (ticketToRemove.isPresent()) {
                 foundUser.get().getTicketsBooked().remove(ticketToRemove.get());
-                try {
-                    saveUserListToFile();
-                    System.out.println("Ticket with ID " + ticketId + " has been canceled.");
-                    return true;
-                } catch (IOException ex) {
-                    System.out.println("Error saving user list: " + ex.getMessage());
-                    return false;
-                }
+                saveUserListToFile();
+                System.out.println("Ticket with ID " + ticketId + " has been canceled.");
+                return true;
             } else {
                 System.out.println("No ticket found with ID " + ticketId);
                 return false;
@@ -110,6 +113,51 @@ public class UserBookingService {
         } else {
             System.out.println("User not found.");
             return false;
+        }
+    }
+
+    public Boolean bookTrainSeat(Train train, int row, int seat, String source, String dest) {
+        try {
+            List<List<Integer>> seats = train.getSeats();
+
+            if (seats != null && row >= 0 && row < seats.size() && seat >= 0 && seat < seats.get(row).size()) {
+                if (seats.get(row).get(seat) == 0) {
+                    seats.get(row).set(seat, 1);
+                    train.setSeats(seats);
+                    train.setSource(source);
+                    train.setDestination(dest);
+
+                    TrainService trainService = new TrainService();
+                    trainService.updateTrain(train);
+
+                    String ticketId = generateTicketId();
+                    Ticket newTicket = new Ticket(ticketId, user.getUserId(), train.getSource(), train.getDestination(), getCurrentDate(), train);
+
+                    user.addTicketBooked(newTicket);
+                    System.out.println("New ticket details: " + newTicket.getTicketInfo());
+                    System.out.println("Ticket details: " + newTicket);
+                    saveUserListToFile();
+
+                    return true;
+                } else {
+                    System.out.println("Seat " + row + ", " + seat + " is already booked.");
+                    return false;
+                }
+            } else {
+                System.out.println("Invalid seat selection.");
+                return false;
+            }
+        } catch (IOException ex) {
+            System.out.println("Error booking train seat: " + ex.getMessage());
+            return false;
+        }
+    }
+
+    private void saveUserListToFile() {
+        try {
+            objectMapper.writeValue(new File(USER_FILE_PATH), userList);
+        } catch (IOException e) {
+            System.out.println("Error saving user list: " + e.getMessage());
         }
     }
 
@@ -124,31 +172,20 @@ public class UserBookingService {
     }
 
     public List<List<Integer>> fetchSeats(Train train) {
-        // Assuming train.getSeats() never returns null based on previous discussions
         return train.getSeats();
     }
 
-    public Boolean bookTrainSeat(Train train, int row, int seat) {
-        try {
-            List<List<Integer>> seats = train.getSeats();
-            if (seats != null && row >= 0 && row < seats.size() && seat >= 0 && seat < seats.get(row).size()) {
-                if (seats.get(row).get(seat) == 0) {
-                    seats.get(row).set(seat, 1);
-                    train.setSeats(seats);
-                    TrainService trainService = new TrainService();
-                    trainService.addTrain(train);
-                    return true; // Booking successful
-                } else {
-                    System.out.println("Seat " + row + ", " + seat + " is already booked.");
-                    return false; // Seat is already booked
-                }
-            } else {
-                System.out.println("Invalid seat selection.");
-                return false; // Invalid row or seat index
-            }
-        } catch (IOException ex) {
-            System.out.println("Error booking train seat: " + ex.getMessage());
-            return false;
-        }
+    private String generateTicketId() {
+        return UUID.randomUUID().toString();
+    }
+
+    private String getCurrentDate() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        return dateFormat.format(new Date(System.currentTimeMillis()));
+    }
+
+    public void logout() {
+        this.user = null;
+        System.out.println("Logged out successfully.");
     }
 }
